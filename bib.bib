@@ -1,0 +1,35 @@
+@article{wiesner, author = {Wiesner, Stephen}, title = {Conjugate Coding}, year = {1983}, issue_date = {Winter-Spring 1983}, publisher = {Association for Computing Machinery}, address = {New York, NY, USA}, volume = {15}, number = {1}, issn = {0163-5700}, url = {https://doi.org/10.1145/1008908.1008920}, doi = {10.1145/1008908.1008920}, journal = {SIGACT News}, month = jan, pages = {78–88}, numpages = {11} }
+@article{SQIR,
+  author    = {Kesha Hietala and
+               Robert Rand and
+               Shih{-}Han Hung and
+               Liyi Li and
+               Michael Hicks},
+  title     = {Proving Quantum Programs Correct},
+  journal   = {CoRR},
+  volume    = {abs/2010.01240},
+  year      = {2020},
+  url       = {https://arxiv.org/abs/2010.01240},
+  archivePrefix = {arXiv},
+  eprint    = {2010.01240},
+  timestamp = {Mon, 12 Oct 2020 17:53:10 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-2010-01240.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+@article{QWIRE, author = {Paykin, Jennifer and Rand, Robert and Zdancewic, Steve}, title = {QWIRE: A Core Language for Quantum Circuits}, year = {2017}, issue_date = {January 2017}, publisher = {Association for Computing Machinery}, address = {New York, NY, USA}, volume = {52}, number = {1}, issn = {0362-1340}, url = {https://doi.org/10.1145/3093333.3009894}, doi = {10.1145/3093333.3009894}, abstract = { This paper introduces QWIRE (``choir''), a language for defining quantum circuits and an interface for manipulating them inside of an arbitrary classical host language. QWIRE is minimal---it contains only a few primitives---and sound with respect to the physical properties entailed by quantum mechanics. At the same time, QWIRE is expressive and highly modular due to its relationship with the host language, mirroring the QRAM model of computation that places a quantum computer (controlled by circuits) alongside a classical computer (controlled by the host language). We present QWIRE along with its type system and operational semantics, which we prove is safe and strongly normalizing whenever the host language is. We give circuits a denotational semantics in terms of density matrices. Throughout, we investigate examples that demonstrate the expressive power of QWIRE, including extensions to the host language that (1) expose a general analysis framework for circuits, and (2) provide dependent types. }, journal = {SIGPLAN Not.}, month = jan, pages = {846–858}, numpages = {13}, keywords = {denotational semantics, quantum circuits, quantum programming languages, linear types} }
+@misc{coq, url={https://coq.inria.fr/}, journal={The Coq Proof Assistant}, publisher={Institut national de recherche en sciences et technologies du numérique}} 
+@article{VOQC, author = {Hietala, Kesha and Rand, Robert and Hung, Shih-Han and Wu, Xiaodi and Hicks, Michael}, title = {A Verified Optimizer for Quantum Circuits}, year = {2021}, issue_date = {January 2021}, publisher = {Association for Computing Machinery}, address = {New York, NY, USA}, volume = {5}, number = {POPL}, url = {https://doi.org/10.1145/3434318}, doi = {10.1145/3434318}, abstract = {We present VOQC, the first fully verified optimizer for quantum circuits, written using the Coq proof assistant. Quantum circuits are expressed as programs in a simple, low-level language called SQIR, a simple quantum intermediate representation, which is deeply embedded in Coq. Optimizations and other transformations are expressed as Coq functions, which are proved correct with respect to a semantics of SQIR programs. SQIR uses a semantics of matrices of complex numbers, which is the standard for quantum computation, but treats matrices symbolically in order to reason about programs that use an arbitrary number of quantum bits. SQIR's careful design and our provided automation make it possible to write and verify a broad range of optimizations in VOQC, including full-circuit transformations from cutting-edge optimizers.}, journal = {Proc. ACM Program. Lang.}, month = jan, articleno = {37}, numpages = {29}, keywords = {Programming Languages, Certified Compilation, Circuit Optimization, Formal Verification, Quantum Computing} }
+@ARTICLE{deutsch,
+       author = {{Deutsch}, David and {Jozsa}, Richard},
+        title = "{Rapid Solution of Problems by Quantum Computation}",
+      journal = {Proceedings of the Royal Society of London Series A},
+         year = 1992,
+        month = dec,
+       volume = {439},
+       number = {1907},
+        pages = {553-558},
+          doi = {10.1098/rspa.1992.0167},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/1992RSPSA.439..553D},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+@article{shor, author = {Shor, Peter W.}, title = {Polynomial-Time Algorithms for Prime Factorization and Discrete Logarithms on a Quantum Computer}, year = {1997}, issue_date = {Oct. 1997}, publisher = {Society for Industrial and Applied Mathematics}, address = {USA}, volume = {26}, number = {5}, issn = {0097-5397}, url = {https://doi.org/10.1137/S0097539795293172}, doi = {10.1137/S0097539795293172}, abstract = {A digital computer is generally believed to be an efficient universal computing device; that is, it is believed able to simulate any physical computing device with an increase in computation time by at most a polynomial factor. This may not be true when quantum mechanics is taken into consideration. This paper considers factoring integers and finding discrete logarithms, two problems which are generally thought to be hard on a classical computer and which have been used as the basis of several proposed cryptosystems. Efficient randomized algorithms are given for these two problems on a hypothetical quantum computer. These algorithms take a number of steps polynomial in the input size, e.g., the number of digits of the integer to be factored.}, journal = {SIAM J. Comput.}, month = oct, pages = {1484–1509}, numpages = {26}, keywords = {Church's thesis, prime factorization, discrete logarithms, quantum computers, Fourier transforms, spin systems, algorithmic number theory, foundations of quantum mechanics} }

@@ -1,0 +1,69 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{regexpatch}
+\makeatletter
+\usepackage{letltxmacro}
+\usepackage{aligned-overset}
+
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+\usepackage{nowidow}
+
+\usepackage{titling}
+
+
+\title{CMSC 32700 Project Report: Verifying Wiesner's quantum money in SQIR}
+\author{Adrian E. Lehmann}
+\date{Jun 4, 2020}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+At the moment we have many quantum circuit designs, for transmitting and encoding information but none of them have been tried to be verfied using SQIR~\cite{SQIR}. 
+Hence in this project we will try to verify a simple $n$-qubit quantum key distribution protocol ``Wiesner's quantum money''~\cite{wiesner} which we will examine close in \cref{sec:wiesner}. 
+We will then proceed to prove a few interesting properties of the scheme.
+The mechanization of said proofs will be described in \cref{sec:proof-impl}.
+
+\section{Background}
+
+\subsection{Coq, QWIRE, SQIR}
+To formally verify the algorithm we will be using a quantum formal verification stack based on the coq proof assistant~\cite{coq}.
+On top of coq, there are two main libraries that we will be using: QWIRE~\cite{QWIRE} and SQIR~\cite{SQIR}.
+QWIRE is a quantum programming language that has been embedded into Coq and SQIR is a fromal verification framework built on top of QWIRE.
+While SQIR was originally intended as an intermediate representation for a verified quantum compiler (VOQC~\cite{voqc}), it has been used to prove various algorithms, such as Deutsch-Josza's~\cite{deutsch} or Shor's~\cite{shor} algorithm.
+
+
+\subsection{Wiesner's qunatum money}\label{sec:wiesner}
+
+
+
+\section{Proof Implementation}\label{sec:proof-impl}
+We implement a proof to show that Wiesner's quantum money for any $n$ qubits will yield the correct state with probability $1$, if Alice and Bob have the same base, and will only yield the correct output with probability $\frac{1}{2^{n_{diff}}}$, where $n_{diff}$ is the number of bits that are different in Bob's and Alice's base. In the following, we will discuss the steps we took to prove these conjecture. The accompanying code can be found on GitHub\footnote{\url{https://github.com/adrianleh/SQIR/blob/main/examples/Wiesner.v}}.
+
+\subsection{Circuit design}
+
+While some both of these algorithms use $n$ qubits, and use the library feature \texttt{npar} to replicate their circuits, we cannot use this, since each qubit of our circuit depeneds on different classical controls. This fact will complicate our proof and cause us to require the work of \cref{sec:circuit-growth}.
+\subsection{Individual qubit correctness}
+\subsection{Inductive circuit growth}\label{sec:circuit-growth}
+\subsection{Inductive circuit correctness}
+\subsection{Individual qubit probability}
+\subsection{Inductive circuit probability}
+
+\section{Discussion}
+
+\section{Conclusion}
+
+
+\bibliographystyle{IEEEtran}
+\bibliography{bib}
+
+\end{document}

@@ -128,9 +128,9 @@ Henceforth we will assume the input to the circuit is initialized to $\ket{\unde
 
 We note that this design is our second iteration, where in the first iteration instead of grouping operations by qubit, we tried grouping them by type (i.e., grouping all the $X$, all of Alice's Hadamard gates, and all of Bob's Hadamard gates) and then concatenating but that turned out to make proof more difficult.
 
-\subsection{Individual qubit correctness}
+\subsection{Individual qubit correctness}\label{sec:qubit-correct}
 We prove that for any individual qubit our construction yields 
-$\begin{cases} 
+$Q(data,ab,bb) = \begin{cases} 
 \ket{0}&, data=0 \wedge ab=bb\\
 \ket{1}&, data=1 \wedge ab=bb\\
 \ket{-}&, data=0 \wedge ab \neq bb\\
@@ -143,12 +143,11 @@ This proof basically follows directly from the definitions of Pauli $X$ and Hada
 In our implementation we proved this through the four lemmata, one for each of the cases listed above.
 Though we note that the actual coq lemma prove that the implementation yields gates that trivally transform $\ket{0}$ into said states, instead of proving states directly. 
 This proof-design was chosen as operations on unitaries are better supported in SQIR.
-\subsection{Inductive circuit correctness}\label{sec:circuit-correct}
-
 
 \subsection{Inductive circuit growth}\label{sec:circuit-growth}
 
-Likely the most important, yet most challenging lemma to prove was about circuit growth, in the inductive proof that we saw in \cref{sec:circuit-correct} was that state by the coq theorem
+Likely the most important, yet most challenging lemma to prove was about circuit growth, in the inductive proof that we will see in \cref{sec:circuit-correct}, we will need to able to reason about growing circuits.
+Specifically, we will require the following theorem:
 \begin{minted}[linenos,tabsize=1,breaklines,escapeinside=||,mathescape=true]{coq}
 Theorem circuit'_helper_growth: forall n l, (length l = S n) ->  uc_eval(circuit'_helper l (S (S n)) 1) =  I 2 |$\otimes$| uc_eval (circuit'_helper l (S n) 0).
 \end{minted}
@@ -163,10 +162,99 @@ The reason we note this property is because this is how we were able to inductiv
 This theorem is the foundation of any useful reasoning about this circuit.
 
 We note that this circuit growth lemma could likely be generalized to all circuits consisting solely of unitary gates, where each qubit operates independently, and the circuit itself is defined by the same structure of inductive definition. Though this generalization had to be forgone in the interest of time.
-\subsection{Individual qubit probability}
-\subsection{Inductive circuit probability}
+
+A further potentially general-enough-to-be-extracted lemma that we used in the process is:
+\begin{minted}[linenos,tabsize=1,breaklines,escapeinside=||,mathescape=true]{coq}
+Lemma kron_dist_mult_id : forall n m (B C : Square m) , (I n) |$\otimes$| (B |$\times$| C) = ((I n) |$\otimes$| B) |$\times$| ((I n) |$\otimes$| C).
+\end{minted}
+\subsection{Inductive circuit correctness}\label{sec:circuit-correct}
+Our goal is to prove that given any data and any bases bitstring(s) that our algorithm yields we expected output.
+
+We define our expected output inductively as follows:
+$$O(n,data,ab,bb) = \begin{cases}I_1&,n=0\\ Q(data[n],ab[n],bb[n]) \otimes O(n-1, data, ab,bb)&, n>0\end{cases}$$
+
+To prove this correct we shall proceed inductively. Our base case has been shown in \cref{sec:qubit-correct}.
+
+To perform the inductive step we will separate the new added qubit from the remaining construction and then using our inductive circuit growth property, we will show that given individual qubit correctness the entire circuit is correct.
+
+The synopsis of the relevant coq code can be seen in \cref{fig:correct-main-circuit}
+\begin{figure}[h]
+    \centering
+\begin{minted}[linenos,tabsize=1,breaklines,escapeinside=||,mathescape=true]{coq}
+Definition q_bool (b : bool) := if b then |$\ket{1}$| else |$\ket{0}$|.
+
+Definition output_state_qubit_i (d ab bb : bool) :=
+  if (eqb ab bb) then
+    q_bool d
+  else
+    hadamard |$\times$| q_bool d.
+
+Fixpoint output_state n (l : combined_bit_string) : Vector (2 ^ n) :=
+  match l with
+  | [] => I 1
+  | (d, ab, bb)::l' => output_state_qubit_i d ab bb |$\otimes$| output_state (n-1) l'
+  end.
+  
+Theorem circuit'_output_correct: forall n data ab bb, (length data = S n) -> (length ab = S n) -> (length bb = S n) -> (uc_eval (circuit' data ab bb (S n))) |$\times$| initial_state (S n) = output_state (S n) (zip (zip data ab) bb).
+\end{minted}
+    \caption{Synopsis of relevant coq statments for correctness}
+    \label{fig:correct-main-circuit}
+\end{figure}
+
+\subsection{Individual qubit probability}\label{sec:qubit-prob}
+
+What we can now prove using the construction of the indivdual qubits in \texttt{output\_state\_qubit\_i} (as seen in \cref{fig:correct-main-circuit}) that given $ab=bb$ we get upon measurement the expected result with certainty.
+Whereas, if $ab\neq bb$, we can use the properties of hadamard to easily show we get the expected outputwith probability $\frac{1}{2}$.
+
+\subsection{Inductive circuit probability}\label{circuit-prob}
+Using the fact that from \cref{sec:circuit-correct}, that we now have a vector representation of our evaluation, we can now prove facts about the execution without requiring deep circuit manipulation.
+
+Using the definition of \texttt{output\_state} (as seen in \cref{fig:correct-main-circuit}), we can easily prove that our circuit yields our target state with probability $1$. 
+Our target state hereby is defined as what we would intuitively expect:
+$$T(n,data) = \begin{cases}
+I_1&, n =0\\
+\begin{cases}
+\ket{1}&, data[n] = \texttt{true}\\
+\ket{0}&, data[n] = \texttt{false}
+\end{cases} \otimes T(n-1,data)&, n>0
+\end{cases}$$
+
+Using the fact that $T(n,data)$ is always a unit vector we can then prove certainty of correct output inductively using SQIR's lemma \texttt{probability\_of\_outcome\_is\_norm}, and a lemma to extract the newly added element from the resulting norm \texttt{norm\_kron}\footnote{This is another lemma that seems generally useful and could be extracted}. 
+
+The other, perhaps more challenging undertaking was to show that given any two bases, the probability of getting \texttt{target\_state} upon measurement is $(\frac{1}{2})^{n_{diff}}$, where $n_{diff}$ is the number of non equal bits in the two bases. To prove this, we use the facts we established in \cref{sec:qubit-prob}, using the same lemmata as in the proof for equal bases to inductively prove the our conjecture.
+
+The relevant coq code for this section can be seen in \cref{fig:circuit-prob}.
+
+\begin{figure}
+    \centering
+\begin{minted}[linenos,tabsize=1,breaklines,escapeinside=||,mathescape=true]{coq}
+
+Notation target_state_qubit_i := q_bool.
+
+Fixpoint target_state n (data: bit_string) : Vector (2^n) :=
+  match data with
+  | [] => I 1
+  | d::data' => target_state_qubit_i d |$\otimes$| target_state (n-1) data'
+  end.
+  
+Theorem circuit'_same_base_correct: forall n data base, (length data = S n) -> (length base = S n) -> (uc_eval (circuit' data base base (S n))) |$\times$| initial_state (S n) = target_state (S n) data. 
+
+Lemma target_state_norm: forall n data, (length data = S n) -> norm ((target_state (S n) data)|$\dagger$| |$\times$| (target_state (S n) data)) = 1.
+Lemma norm_kron: forall (A : Vector 1) (B : Vector 1), @norm (1) (A |$\otimes$| B) = (@norm 1 A * @norm 1 B)%R.
+(* The following lemma already existed in the SQIR codebase *)
+Lemma probability_of_outcome_is_norm : forall {d} (|$\phi$| |$\psi$| : Vector d),
+  probability_of_outcome |$\phi$| |$\psi$| = ((norm (|$\phi\dagger \times \psi$|)) ^ 2)%R.
+
+Theorem probibility_correct: forall n data base, (length data = S n) -> (length base = S n) -> probability_of_outcome (uc_eval (circuit' data base base (S n)) |$\times$| initial_state (S n)) (target_state (S n) data) = 1%R.
+
+Theorem probibility_incorrect: forall n n_diff data ab bb, (length data = S n) -> (length ab = S n) -> (length bb = S n) -> count_diff ab bb = n_diff -> probability_of_outcome (uc_eval (circuit' data ab bb (S n)) |$\times$| initial_state (S n)) (target_state (S n) data) = ((1/2)%R^n_diff)%R.
+\end{minted}
+    \caption{Synopsis of coq code from statements about probability}
+    \label{fig:circuit-prob}
+\end{figure}
 
 \section{Discussion}
+
 
 \section{Conclusion}
 

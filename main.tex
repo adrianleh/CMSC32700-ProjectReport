@@ -45,7 +45,7 @@ The mechanization of said proofs will be described in \cref{sec:proof-impl}.
 \subsection{Coq, QWIRE, SQIR}
 To formally verify the algorithm we will be using a quantum formal verification stack based on the Coq proof assistant~\cite{Coq}.
 On top of Coq, there are two main libraries that we will be using: QWIRE~\cite{QWIRE} and SQIR~\cite{SQIR}.
-QWIRE is a quantum programming language that has been embedded into Coq and SQIR is a fromal verification framework built on top of QWIRE.
+QWIRE is a quantum programming language that has been embedded into Coq and SQIR is a formal verification framework built on top of QWIRE.
 While SQIR was originally intended as an intermediate representation for a verified quantum compiler (VOQC~\cite{voqc}), it has been used to prove various algorithms, such as Deutsch-Josza's~\cite{deutsch} or Shor's~\cite{shor} algorithm.
 
 
@@ -60,20 +60,20 @@ If his basis does not match, he will have a chance of $\frac{1}{2^{n_{\text{diff
 It follows that Bob's chance getting the correct output at random is $(\frac{3}{4})^n$.
 
 In the context of money, the $n$-bit integer would be a serial number, Alice the central bank, and Bob a malicious \nth{3} party trying to copy money.
-The central bank can validate bills with a given serial numbers, whil the \nth{3} party would be unable to decode the bill to get a valid serial number to copy.
+The central bank can validate bills with a given serial numbers, while the \nth{3} party would be unable to decode the bill to get a valid serial number to copy.
 
 \section{Proof Implementation}\label{sec:proof-impl}
 We implement a proof to show that Wiesner's quantum money scheme for any $n$ qubits will yield the correct state with probability $1$, if Alice and Bob have the same base, and will only yield the correct output with probability $(\frac{1}{2})^{n_{\text{diff}}}$ when Alice's and Bob's bases are different, where $n_{\text{diff}}$ is the number of bits that are different two bases. In the following, we will discuss the steps we took to prove these conjectures. The accompanying code can be found on GitHub\footnote{\url{https://github.com/adrianleh/SQIR/blob/main/examples/Wiesner.v} - we use commit \texttt{6dd2e57} for line-\#s in snippets}.
 
 \subsection{Circuit design}
 
-Our circuit will operate on each qubit independently (i.e. one qubit only influeces the ouput of itself, and the circuit does not require any ancilla), where each qubit will have a Pauli $X$-Gate classically controlled by a data bit, followed by two Hadamard gates, clasically controlled by Alice's and Bob's basis bits.
+Our circuit will operate on each qubit independently (i.e. one qubit only influences the output of itself, and the circuit does not require any ancilla), where each qubit will have a Pauli $X$-Gate classically controlled by a data bit, followed by two Hadamard gates, classically controlled by Alice's and Bob's basis bits.
 
 Given an input of $\ket{0}$, this will if the data bit is $1$, transform to $\ket{1}$, and then use Alice's basis bit to either stay in the basis $\ket{0},\ket{1}$ basis, or rotate into the $\ket{+},\ket{-}$ basis. 
 Bob's basis bit will then control the rotation bob applies to attempt to restore the original basis.
 
 We will now proceed to describing the circuit for $n$ qubits. 
-For this we will assume, we have $3$ $n$-sized arrays $data, ab, bb$, containing classical data, basis bits for Alices, and basis bits for Bob respectively.
+For this we will assume, we have $3$ $n$-sized arrays $data, ab, bb$, containing classical data, basis bits for Alice, and basis bits for Bob respectively.
 
 We designed the circuit inductively, row by row using, such that for our circuit is defined as
 $$C(n) = \begin{cases}
@@ -127,7 +127,7 @@ Definition circuit' (alice_data alice_base bob_base : bit_string) (n : nat) := (
     \label{fig:circuit}
 \end{figure}
 
-While some algorithms in other SQIR examples use $n$ qubits and use the library feature \texttt{npar} to replicate their circuits, we cannot use this, since each qubit of our circuit depeneds on different classical controls and is hence not identical. This fact will complicate our proof and cause us to require the work of \cref{sec:circuit-growth}.
+While some algorithms in other SQIR examples use $n$ qubits and use the library feature \texttt{npar} to replicate their circuits, we cannot use this, since each qubit of our circuit depends on different classical controls and is hence not identical. This fact will complicate our proof and cause us to require the work of \cref{sec:circuit-growth}.
 
 
 Henceforth we will assume the input to the circuit is initialized to $\ket{\underbrace{0...0}_n}$.
@@ -155,7 +155,7 @@ Lemma circuit'_individual_qubit_non_meas_diff_base_false: forall base_a base_b n
 Lemma circuit'_individual_qubit_non_meas_diff_base_true: forall base_a base_b n i, base_a <> base_b -> (n > 0)%nat -> uc_eval (circuit'_qubit_i_non_meas true base_a base_b n i) = @pad 1 i n (hadamard |$\times$| σx). (* line 185 *)
 
 \end{minted}
-Though we note that the actual Coq lemma prove that the implementation yields gates that trivally transform $\ket{0}$ into said states, instead of proving states directly. 
+Though we note that the actual Coq lemma prove that the implementation yields gates that trivially transform $\ket{0}$ into said states, instead of proving states directly. 
 This proof-design was chosen as operations on unitaries are easir to work with in future steps.
 
 \subsection{Inductive circuit growth}\label{sec:circuit-growth}
@@ -172,7 +172,7 @@ Though proving this theorem by itself turned out to be impossible and we resorte
 Lemma circuit'_helper_growth_i: forall n l i, (length l = S n) -> uc_eval(circuit'_helper l ((S i) + (S n)) (S i)) =  I (2^(S i)) |$\otimes$| uc_eval (circuit'_helper l (S n) 0). (* line 277 *)
 \end{minted}
 
-The reason we note this property is because this is how we were able to inductively reason about a heterogenous circuit of size $n$ which had been inductively defined.
+The reason we note this property is because this is how we were able to inductively reason about a heterogeneous circuit of size $n$ which had been inductively defined.
 This theorem is the foundation of any useful reasoning about this circuit.
 
 We note that this circuit growth lemma could likely be generalized to all circuits consisting solely of unitary gates each controlled by a classical bit, where each qubit operates independently, and the circuit itself is defined by the same structure of inductive definition. 
@@ -219,7 +219,7 @@ Theorem circuit'_output_correct: forall n data ab bb, (length data = S n) -> (le
 \subsection{Individual qubit probability}\label{sec:qubit-prob}
 
 What we can now prove using the construction of the indivdual qubits in \texttt{output\_state\_qubit\_i} (as seen in \cref{fig:correct-main-circuit}) that given $ab=bb$ we get upon measurement the expected result with certainty.
-Whereas, if $ab\neq bb$, we can use the properties of hadamard to easily show we get the expected outputwith probability $\frac{1}{2}$.
+Whereas, if $ab\neq bb$, we can use the properties of hadamard to easily show we get the expected output with probability $\frac{1}{2}$.
 
 In our implementation these facts are proven using the following two theorems:
 \begin{minted}[linenos,tabsize=1,breaklines,escapeinside=||,mathescape=true]{Coq}
